@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+#define INF 999999
+
+// Edge structure
+typedef struct {
+    int u, v, weight;
+} Edge;
+
+int parent[MAX];
+
+// Find set representative (with path compression)
+int find(int i) {
+    if (parent[i] != i)
+        parent[i] = find(parent[i]);
+    return parent[i];
+}
+
+// Union two sets
+void union_set(int u, int v) {
+    int set_u = find(u);
+    int set_v = find(v);
+    parent[set_u] = set_v;
+}
+
+// Compare function for qsort
+int compare(const void* a, const void* b) {
+    return ((Edge*)a)->weight - ((Edge*)b)->weight;
+}
+
+int main() {
+    int n;
+    printf("Enter number of vertices: ");
+    scanf("%d", &n);
+
+    int cost[MAX][MAX];
+    printf("Enter adjacency matrix (0 for no edge):\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &cost[i][j]);
+            if (cost[i][j] == 0 && i != j)
+                cost[i][j] = INF;
+        }
+    }
+
+    // Create edge list
+    Edge edges[MAX*MAX];
+    int edge_count = 0;
+    for (int i = 0; i < n; i++) {
+        for (int j = i+1; j < n; j++) { // undirected graph
+            if (cost[i][j] != INF) {
+                edges[edge_count].u = i;
+                edges[edge_count].v = j;
+                edges[edge_count].weight = cost[i][j];
+                edge_count++;
+            }
+        }
+    }
+
+    // Sort edges by weight
+    qsort(edges, edge_count, sizeof(Edge), compare);
+
+    // Initialize disjoint sets
+    for (int i = 0; i < n; i++)
+        parent[i] = i;
+
+    printf("\nEdges in Minimum Spanning Tree:\n");
+    int total_cost = 0;
+    int edges_selected = 0;
+
+    for (int i = 0; i < edge_count && edges_selected < n-1; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+
+        if (find(u) != find(v)) {
+            printf("%d - %d | Weight = %d\n", u, v, edges[i].weight);
+            total_cost += edges[i].weight;
+            union_set(u, v);
+            edges_selected++;
+        }
+    }
+
+    printf("\nTotal Minimum Cost = %d\n", total_cost);
+
+    return 0;
+}
+\

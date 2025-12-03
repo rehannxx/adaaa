@@ -45,3 +45,5 @@ int main() {
     }
     printf("\nTotal Minimum Cost = %d\n", total_cost);
     return 0;
+}
+
